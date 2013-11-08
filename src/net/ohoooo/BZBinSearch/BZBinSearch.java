@@ -77,6 +77,19 @@ public class BZBinSearch{
 			usage();
 		}
 		
+		if(commandLine.hasOption("s")){
+			strStart = Integer.parseInt(commandLine.getOptionValue("s"));
+		} else {
+			System.err.println("Error:Need start position to cut time string in row");
+			return 1;
+		}
+		if(commandLine.hasOption("e")){
+			strEnd = Integer.parseInt(commandLine.getOptionValue("e"));
+		} else {
+			System.err.println("Error:Need end position to cut time string in row");
+			return 1;
+		}
+		
 		df1 = new SimpleDateFormat(paramFormatString);
 		df2 = new SimpleDateFormat(fileFormatString);
 		
