@@ -11,6 +11,10 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.Options;
 import org.apache.commons.compress.compressors.bzip2.BZip2PartedCompressorInputStream;
 
 /**
@@ -34,14 +38,49 @@ public class BZBinSearch{
 
 	public static final long MARGINREADTIME = 5 * 1000; // Set Up mill second
 	public static final int MINIMUMSIZE = 2 * 1000 * 1000;
-	private static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss");
-	private static final DateFormat df2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private static String paramFormatString = "yyyy-MM-dd_HH:mm:ss";
+	private static String fileFormatString = "yyyy-MM-dd HH:mm:ss";
+	private static DateFormat df1;
+	private static DateFormat df2;
+	
+	private static int strStart,strEnd;
 
 	private static final int TIMEERRORLIMIT = 40;
 	/**
 	 * @param args
+	 * @return 
 	 */
-	public static void main(String[] args) {
+	public static int main(String[] args) {
+		
+		// Option parser
+		Options options = new Options();
+		
+		options.addOption("h", "help", false, "Help and Usage");
+		options.addOption("s", "start", true, "Start Position to cut time string");
+		options.addOption("e", "end", true, "End Position to cut time string");
+		options.addOption("f", "from", true, "From time for log reading");
+		options.addOption("t", "to", true, "To time for log reading");
+		options.addOption("i", "input", true, "Input File Name");
+		options.addOption("p", "paramformat", true, "Parameter date format");
+		options.addOption("F", "timeformat", true, "Date format in log file");
+
+		CommandLineParser parser = new BasicParser();
+		CommandLine commandLine;
+		try{
+			commandLine = parser.parse(options, args);
+		} catch (org.apache.commons.cli.ParseException e) {
+			System.err.println("Parameter Parse Error");
+			return 1;
+		}
+
+		if(commandLine.hasOption("h")){
+			usage();
+		}
+		
+		df1 = new SimpleDateFormat(paramFormatString);
+		df2 = new SimpleDateFormat(fileFormatString);
+		
+		
 		if(args.length < 1){
 			usage();
 		}
@@ -68,8 +107,8 @@ public class BZBinSearch{
 			long startTime = 0;
 			long endTime = Long.MAX_VALUE;
 			try {
-				startTime = df.parse(args[0]).getTime() - MARGINREADTIME;
-				endTime = df.parse(args[1]).getTime() + MARGINREADTIME;
+				startTime = df1.parse(args[0]).getTime() - MARGINREADTIME;
+				endTime = df1.parse(args[1]).getTime() + MARGINREADTIME;
 			} catch (ParseException e1) {
 				System.out.println("ERROR Irreguler Timestamp Format. Timestamp Format must be 'yyyy-MM-dd_HH:mm:ss'.");
 				System.exit(1);
@@ -214,6 +253,7 @@ public class BZBinSearch{
 			e.printStackTrace();
 			System.exit(1);
 		}
+		return 0;
 	}
 
 	private static void usage(){
