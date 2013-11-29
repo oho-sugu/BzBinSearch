@@ -167,8 +167,9 @@ public class BZBinSearch{
 		
 		// End Preparation =======================================================================================
 		
-		try (RandomAccessFile inputFile = new RandomAccessFile(new File(inputFileName),"r")) {
-			
+		RandomAccessFile inputFile = null;
+		try {
+			inputFile = new RandomAccessFile(new File(inputFileName),"r");
 			BinSearch.binSearch(inputFile, searcher, comparator, outputter);
 
 			inputFile.close();
@@ -187,6 +188,14 @@ public class BZBinSearch{
 		} catch (PatternNotExistException e) {
 			errorLog("BZip2 block header pattern not exist. Is it really bzip2 type file?",e);
 			System.exit(1);
+		} finally {
+			if(inputFile != null){
+				try {
+					inputFile.close();
+				} catch (IOException e) {
+					errorLog("File close error.",e);
+				}
+			}
 		}
 		
 		System.exit(0);
