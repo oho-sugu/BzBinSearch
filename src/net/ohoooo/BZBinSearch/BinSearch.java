@@ -37,7 +37,8 @@ public class BinSearch {
 			throws FileTooSmallException, CantSearchIndexException, IOException, PatternNotExistException {
 
 		// File is too small to use this program.
-		if (inputFile.length() < MINIMUMSIZE) {
+		// n : log n
+		if (inputFile.length() < MINIMUMSIZE * 3) {
 			throw new FileTooSmallException();
 		}
 
@@ -48,9 +49,10 @@ public class BinSearch {
 
 
 		// Variables needed by BZip2PartedCompressInputStream
-		BzHeaderParam bzHeaderParam;
+		BzHeaderParam bzHeaderParam = null,oldHeaderParam,resultHeaderParam;
 
 		do {
+			oldHeaderParam = bzHeaderParam;
 			bzHeaderParam = patternSearch(inputFile, halfPosition);
 
 			// Search index value such as timestamp
@@ -80,8 +82,10 @@ public class BinSearch {
 			// Binary Search
 			if (comparator.compare(time1) >= BinComparator.IN) {
 				// startPosition = startPosition;
+				resultHeaderParam = oldHeaderParam;
 			} else {
 				startPosition = halfPosition;
+				resultHeaderParam = bzHeaderParam;
 			}
 
 			// Initialize for Next Iteration.
@@ -94,18 +98,18 @@ public class BinSearch {
 		if (halfPosition == partSize) {
 			// All Backwarded Searched. StartTime < File Start or StartTime in First
 			// PartSize
-			bzHeaderParam.readStartIndex = 4;
-			bzHeaderParam.prebuffer = 0;
-			bzHeaderParam.offset = 0;
+			resultHeaderParam.readStartIndex = 4;
+			resultHeaderParam.prebuffer = 0;
+			resultHeaderParam.offset = 0;
 		}
 
 		// Begin Output Logs
 
-		inputFile.seek(bzHeaderParam.readStartIndex);
+		inputFile.seek(resultHeaderParam.readStartIndex);
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(
 				new BZip2PartedCompressorInputStream(new FileInputStream(
-						inputFile.getFD()), bzHeaderParam.prebuffer, bzHeaderParam.offset, 9, true)));
+						inputFile.getFD()), resultHeaderParam.prebuffer, resultHeaderParam.offset, 9, true)));
 
 		String line;
 		long time;
