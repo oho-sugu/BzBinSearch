@@ -6,13 +6,15 @@
  */
 package net.ohoooo.BZBinSearch;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import org.apache.commons.cli.*;
-import org.apache.commons.compress.compressors.bzip2.BZip2PartedCompressorInputStream;
 
 /**
  * @author Suguru Oho
@@ -22,20 +24,18 @@ import org.apache.commons.compress.compressors.bzip2.BZip2PartedCompressorInputS
  */
 public class BZBinSearch{
 	public static final long MARGINREADTIME = 5 * 1000; // Set Up mill second
+	private static boolean debug = false;
 
 	/**
 	 * @param args
 	 * @return 
 	 */
 	public static void main(String[] args) {
-		
 		// needed parameters
 		int strStart = 6,strEnd = 25;
 		DateFormat df1 = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss"),df2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		long fromTime = 0,toTime = Long.MAX_VALUE;
 		String inputFileName = "";
-		
-		boolean debug = false;
 		
 		// Option parser  =====================================================================================
 		// parsing option value and validate and set parameters
@@ -63,10 +63,12 @@ public class BZBinSearch{
 
 			if(commandLine.hasOption("d")){
 				debug = true;
+				debugLog("Debug ON");
 			}
 			
 			if(commandLine.hasOption("s")){
 				strStart = Integer.parseInt(commandLine.getOptionValue("s"));
+				debugLog("strStart:"+strStart);
 			} else {
 				errorLog("Need start position to cut time string in row");
 				usage(options);
@@ -74,6 +76,7 @@ public class BZBinSearch{
 			}
 			if(commandLine.hasOption("e")){
 				strEnd = Integer.parseInt(commandLine.getOptionValue("e"));
+				debugLog("strEnd:"+strEnd);
 			} else {
 				errorLog("Need end position to cut time string in row");
 				usage(options);
@@ -82,6 +85,7 @@ public class BZBinSearch{
 			
 			if(commandLine.hasOption("i")){
 				inputFileName = commandLine.getOptionValue("i");
+				debugLog("inputFileName:"+inputFileName);
 			} else {
 				errorLog("Need input file name");
 				usage(options);
@@ -90,6 +94,7 @@ public class BZBinSearch{
 
 			if(commandLine.hasOption("p")){
 				df1 = new SimpleDateFormat(commandLine.getOptionValue("p"));
+				debugLog("df1:"+commandLine.getOptionValue("p"));
 			} else {
 				errorLog("Need Parameter Date Format");
 				usage(options);
@@ -97,6 +102,7 @@ public class BZBinSearch{
 			}
 			if(commandLine.hasOption("F")){
 				df2 = new SimpleDateFormat(commandLine.getOptionValue("F"));
+				debugLog("df2:"+commandLine.getOptionValue("F"));
 			} else {
 				errorLog("Need File Date Format");
 				usage(options);
@@ -106,6 +112,7 @@ public class BZBinSearch{
 			if(commandLine.hasOption("f")){
 				try {
 					fromTime = df1.parse(commandLine.getOptionValue("f")).getTime() - MARGINREADTIME;
+					debugLog("fromTime:"+commandLine.getOptionValue("f")+" : "+fromTime);
 				} catch (ParseException e) {
 					errorLog("Need 'from' time",e);
 					usage(options);
@@ -119,6 +126,7 @@ public class BZBinSearch{
 			if(commandLine.hasOption("t")){
 				try {
 					toTime = df1.parse(commandLine.getOptionValue("t")).getTime() + MARGINREADTIME;
+					debugLog("toTime:"+commandLine.getOptionValue("t")+" : "+toTime);
 				} catch (ParseException e) {
 					errorLog("Need 'to' time",e);
 					usage(options);
@@ -145,11 +153,16 @@ public class BZBinSearch{
 		final int _strStart = strStart, _strEnd = strEnd;
 		final DateFormat _df1 = df1, _df2 = df2;
 		final long _fromTime = fromTime, _toTime = toTime;
+		final boolean _debug = debug;
 		
 		IndexSearcher searcher = new IndexSearcher() {
 			@Override
 			public long search(String str) throws ParseException {
-				return _df2.parse((str.substring(_strStart, _strEnd))).getTime();
+				String substr = str.substring(_strStart, _strEnd);
+				if(_debug) debugLog("substr:"+substr); // not eval when not debug for performance reason
+				long ret = _df2.parse(substr).getTime();
+				if(_debug) debugLog("timestamp:"+ret); // not eval when not debug for performance reason
+				return ret;
 			}
 		};
 		
@@ -179,9 +192,7 @@ public class BZBinSearch{
 			long startTimestamp = System.currentTimeMillis();
 			inputFile = new RandomAccessFile(new File(inputFileName),"r");
 			BinSearch.binSearch(inputFile, searcher, comparator, outputter);
-			if(debug){
-				System.out.println("Elapsed Time:"+((System.currentTimeMillis()-startTimestamp)/1000));
-			}
+			debugLog("Elapsed Time:"+((System.currentTimeMillis()-startTimestamp)/1000));
 
 			inputFile.close();
 		} catch (FileNotFoundException e) {
@@ -223,5 +234,10 @@ public class BZBinSearch{
 	private static void errorLog(String err,Exception e){
 		e.printStackTrace();
 		errorLog(err);
+	}
+	private static void debugLog(String log){
+		if(debug){
+			System.out.println("Debug:"+log);
+		}
 	}
 }
