@@ -58,8 +58,10 @@ public class BinSearch {
 			// Search index value such as timestamp
 			inputFile.seek(bzHeaderParam.readStartIndex);
 			BufferedReader br = new BufferedReader(new InputStreamReader(
-					new BZip2PartedCompressorInputStream(new FileInputStream(
-							inputFile.getFD()), bzHeaderParam.prebuffer, bzHeaderParam.offset, 9, false)));
+					new BZip2PartedCompressorInputStream(
+							new BufferedInputStream(
+							new FileInputStream(
+							inputFile.getFD()), 100000), bzHeaderParam.prebuffer, bzHeaderParam.offset, 9, false)));
 
 			String line = br.readLine();
 			long time1 = -1;
@@ -108,8 +110,10 @@ public class BinSearch {
 		inputFile.seek(resultHeaderParam.readStartIndex);
 
 		BufferedReader br = new BufferedReader(new InputStreamReader(
-				new BZip2PartedCompressorInputStream(new FileInputStream(
-						inputFile.getFD()), resultHeaderParam.prebuffer, resultHeaderParam.offset, 9, true)));
+				new BZip2PartedCompressorInputStream(
+						new BufferedInputStream(
+						new FileInputStream(
+						inputFile.getFD()), 100000), resultHeaderParam.prebuffer, resultHeaderParam.offset, 9, true)));
 
 		String line;
 		long time;
@@ -134,7 +138,6 @@ public class BinSearch {
 	
 	private static BzHeaderParam patternSearch(RandomAccessFile inputFile,long halfPosition) throws IOException,PatternNotExistException{
 		// Pattern Search Variable
-		int[] buffer = new int[5];
 		int series = -1;
 		int pointer = -1;
 		
@@ -149,7 +152,6 @@ public class BinSearch {
 					if (data == search[i][0]) {
 						series = i;
 						pointer = 0;
-						buffer[0] = data;
 						break;
 					}
 				}
@@ -158,7 +160,6 @@ public class BinSearch {
 					series = -1;
 					pointer = -1;
 				} else {
-					buffer[pointer] = data;
 					if (pointer >= 4) {
 						BzHeaderParam headerParam = new BzHeaderParam();
 						headerParam.readStartIndex = inputFile.getFilePointer() - 5;

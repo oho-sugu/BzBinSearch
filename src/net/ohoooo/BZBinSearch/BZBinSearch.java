@@ -35,11 +35,14 @@ public class BZBinSearch{
 		long fromTime = 0,toTime = Long.MAX_VALUE;
 		String inputFileName = "";
 		
+		boolean debug = false;
+		
 		// Option parser  =====================================================================================
 		// parsing option value and validate and set parameters
 		Options options = new Options();
 		
 		options.addOption("h", "help", false, "Help and Usage");
+		options.addOption("d", "debug", false, "Enable Debug print");
 		options.addOption("s", "start", true, "Start Position to cut time string");
 		options.addOption("e", "end", true, "End Position to cut time string");
 		options.addOption("f", "from", true, "From time for log reading");
@@ -56,6 +59,10 @@ public class BZBinSearch{
 			if(commandLine.hasOption("h")){
 				usage(options);
 				System.exit(1);
+			}
+
+			if(commandLine.hasOption("d")){
+				debug = true;
 			}
 			
 			if(commandLine.hasOption("s")){
@@ -169,8 +176,12 @@ public class BZBinSearch{
 		
 		RandomAccessFile inputFile = null;
 		try {
+			long startTimestamp = System.currentTimeMillis();
 			inputFile = new RandomAccessFile(new File(inputFileName),"r");
 			BinSearch.binSearch(inputFile, searcher, comparator, outputter);
+			if(debug){
+				System.out.println("Elapsed Time:"+((System.currentTimeMillis()-startTimestamp)/1000));
+			}
 
 			inputFile.close();
 		} catch (FileNotFoundException e) {
