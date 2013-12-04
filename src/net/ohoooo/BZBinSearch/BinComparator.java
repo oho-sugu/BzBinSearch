@@ -16,5 +16,5 @@ public interface BinComparator {
 	public static final int BEFORE = -1;
 	public static final int IN = 0;
 	public static final int AFTER = 1;
-	public int compare(long value);
+	public int compare(long value, boolean margin);
 }
