@@ -113,7 +113,7 @@ public class BZBinSearch{
 
 			if(commandLine.hasOption("f")){
 				try {
-					fromTime = df1.parse(commandLine.getOptionValue("f")).getTime() - MARGINREADTIME;
+					fromTime = df1.parse(commandLine.getOptionValue("f")).getTime();
 					debugLog("fromTime:"+commandLine.getOptionValue("f")+" : "+fromTime);
 				} catch (ParseException e) {
 					errorLog("Need 'from' time",e);
@@ -127,7 +127,7 @@ public class BZBinSearch{
 			}
 			if(commandLine.hasOption("t")){
 				try {
-					toTime = df1.parse(commandLine.getOptionValue("t")).getTime() + MARGINREADTIME;
+					toTime = df1.parse(commandLine.getOptionValue("t")).getTime();
 					debugLog("toTime:"+commandLine.getOptionValue("t")+" : "+toTime);
 				} catch (ParseException e) {
 					errorLog("Need 'to' time",e);
@@ -170,10 +170,14 @@ public class BZBinSearch{
 		
 		BinComparator comparator = new BinComparator() {
 			@Override
-			public int compare(long time) {
-				if(time < _fromTime){
+			public int compare(long time, boolean margin) {
+				long _margin = 0;
+				if(margin){
+					_margin = MARGINREADTIME;
+				}
+				if(time < _fromTime - _margin){
 					return BinComparator.BEFORE;
-				} else if(_toTime < time){
+				} else if(_toTime + _margin < time){
 					return BinComparator.AFTER;
 				}
 				return BinComparator.IN;

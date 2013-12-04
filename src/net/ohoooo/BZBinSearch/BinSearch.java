@@ -82,7 +82,7 @@ public class BinSearch {
 			}
 
 			// Binary Search
-			if (comparator.compare(time1) >= BinComparator.IN) {
+			if (comparator.compare(time1, true) >= BinComparator.IN) {
 				// startPosition = startPosition;
 				resultHeaderParam = oldHeaderParam;
 			} else {
@@ -117,15 +117,19 @@ public class BinSearch {
 
 		String line;
 		long time;
+		int compResultWithMargin;
 		while ((line = br.readLine()) != null) {
 			try {
 				time = searcher.search(line);
-				if (comparator.compare(time) == BinComparator.AFTER) {
+				compResultWithMargin = comparator.compare(time, true);
+				if (compResultWithMargin == BinComparator.AFTER) {
 					break;
-				} else if (comparator.compare(time) == BinComparator.BEFORE) {
+				} else if (compResultWithMargin == BinComparator.BEFORE) {
 					continue;
 				} else {
-					outputter.output(line);
+					if(comparator.compare(time, false) == BinComparator.IN){
+						outputter.output(line);
+					}
 				}
 			} catch (ParseException e) {
 				// Can't Convert String to Time. Maybe irregular format Log.
