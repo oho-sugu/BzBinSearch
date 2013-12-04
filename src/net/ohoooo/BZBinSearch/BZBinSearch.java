@@ -13,6 +13,7 @@ import java.io.RandomAccessFile;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 import org.apache.commons.cli.*;
 
@@ -33,7 +34,8 @@ public class BZBinSearch{
 	public static void main(String[] args) {
 		// needed parameters
 		int strStart = 6,strEnd = 25;
-		DateFormat df1 = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss"),df2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		final Locale locale = Locale.ENGLISH;
+		DateFormat df1 = new SimpleDateFormat("yyyy-MM-dd_HH:mm:ss", locale),df2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", locale);
 		long fromTime = 0,toTime = Long.MAX_VALUE;
 		String inputFileName = "";
 		
@@ -65,7 +67,7 @@ public class BZBinSearch{
 				debug = true;
 				debugLog("Debug ON");
 			}
-			
+
 			if(commandLine.hasOption("s")){
 				strStart = Integer.parseInt(commandLine.getOptionValue("s"));
 				debugLog("strStart:"+strStart);
@@ -93,7 +95,7 @@ public class BZBinSearch{
 			}
 
 			if(commandLine.hasOption("p")){
-				df1 = new SimpleDateFormat(commandLine.getOptionValue("p"));
+				df1 = new SimpleDateFormat(commandLine.getOptionValue("p"), locale);
 				debugLog("df1:"+commandLine.getOptionValue("p"));
 			} else {
 				errorLog("Need Parameter Date Format");
@@ -101,7 +103,7 @@ public class BZBinSearch{
 				System.exit(1);
 			}
 			if(commandLine.hasOption("F")){
-				df2 = new SimpleDateFormat(commandLine.getOptionValue("F"));
+				df2 = new SimpleDateFormat(commandLine.getOptionValue("F"), locale);
 				debugLog("df2:"+commandLine.getOptionValue("F"));
 			} else {
 				errorLog("Need File Date Format");
@@ -151,7 +153,7 @@ public class BZBinSearch{
 
 		// Prepare Parameter included classes ===================================================================
 		final int _strStart = strStart, _strEnd = strEnd;
-		final DateFormat _df1 = df1, _df2 = df2;
+		final DateFormat _df2 = df2;
 		final long _fromTime = fromTime, _toTime = toTime;
 		final boolean _debug = debug;
 		
