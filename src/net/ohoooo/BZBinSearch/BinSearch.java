@@ -49,10 +49,10 @@ public class BinSearch {
 
 
 		// Variables needed by BZip2PartedCompressInputStream
-		BzHeaderParam bzHeaderParam = null,oldHeaderParam,resultHeaderParam;
+		BzHeaderParam bzHeaderParam = null,startHeaderParam = new BzHeaderParam(),resultHeaderParam;
+		startHeaderParam.init();
 
 		do {
-			oldHeaderParam = bzHeaderParam;
 			bzHeaderParam = patternSearch(inputFile, halfPosition);
 
 			// Search index value such as timestamp
@@ -84,10 +84,12 @@ public class BinSearch {
 			// Binary Search
 			if (comparator.compare(time1, true) >= BinComparator.IN) {
 				// startPosition = startPosition;
-				resultHeaderParam = oldHeaderParam;
+				resultHeaderParam = startHeaderParam;
+				// startHeaderParam = startHeaderParam;
 			} else {
 				startPosition = halfPosition;
 				resultHeaderParam = bzHeaderParam;
+				startHeaderParam = bzHeaderParam;
 			}
 
 			// Initialize for Next Iteration.
@@ -96,14 +98,6 @@ public class BinSearch {
 			inputFile.seek(halfPosition);
 
 		} while (partSize > MINIMUMSIZE);
-
-		if (halfPosition == partSize) {
-			// All Backwarded Searched. StartTime < File Start or StartTime in First
-			// PartSize
-			resultHeaderParam.readStartIndex = 4;
-			resultHeaderParam.prebuffer = 0;
-			resultHeaderParam.offset = 0;
-		}
 
 		// Begin Output Logs
 
@@ -182,6 +176,12 @@ class BzHeaderParam{
 	long readStartIndex;
 	int offset;
 	int prebuffer;
+	
+	public void init(){
+		this.readStartIndex = 4;
+		this.prebuffer = 0;
+		this.offset = 0;
+	}
 }
 
 class PatternNotExistException extends Exception{
